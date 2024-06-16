@@ -62,6 +62,7 @@ int verbose;
 static int randomizer;
 static int dither;
 static int has_firmware;
+static int refclock_10M;
 
 static void transfer_callback(struct libusb_transfer *transfer) {
     int size = 0;
@@ -134,17 +135,18 @@ static void printhelp(void) {
     fprintf(stderr, " --samplerate, -s   Sample Rate, default 32000000\n");
     fprintf(stderr, " --gainmode, -m     Gain Mode low/high, default high\n");
     fprintf(stderr, " --att, -a          Attenuation, default 0\n");
-    fprintf(stderr, " --gain, -g         Gain value, default 3\n");
+    fprintf(stderr, " --gain, -g         Gain value, default 0\n");
     fprintf(stderr, " --queuedepth, -q   Queue depth, default 16\n");
     fprintf(stderr,
             " --reqsize, -p      Packets per transfer request, default 8\n");
+    fprintf(stderr, " --refclock-10M, -T  use 10 MHz refclock (27 MHz default)\n");
     fprintf(stderr, " --help, -h         Print this help\n");
 }
 
 // Determine actual (vs requested) clock frequency
 // Adapted from code by Franco Venturi, K4VZ
 
-static const uint32_t xtalFreq = 27000000;
+static uint32_t xtalFreq = 27000000;
 
 static double actual_freq(double frequency){
     while (frequency < 1000000)
@@ -208,13 +210,14 @@ int main(int argc, char **argv) {
             {"att", required_argument, 0, 'a'},
             {"queuedepth", required_argument, 0, 'q'},
             {"reqsize", required_argument, 0, 'p'},
+	    {"refclock-10M", no_argument, &refclock_10M, 'T'}, 
             {"help", no_argument, 0, 'h'},
             {0, 0, 0, 0}};
 
         int option_index = 0;
         int gainvalue = 0;
 
-        c = getopt_long(argc, argv, "f:drs:hm:g:a:q:p:", long_options,
+        c = getopt_long(argc, argv, "f:drs:hm:g:a:q:p:T", long_options,
                         &option_index);
 
         if (c == -1)
@@ -303,6 +306,9 @@ int main(int argc, char **argv) {
                 return 0;
             }
             break;
+        case 'T':
+            xtalFreq = (uint32_t)10000000;
+            break;
         case 'h':
         case '?':
         default:
@@ -313,6 +319,7 @@ int main(int argc, char **argv) {
     }
 
     fprintf(stderr, "Firmware: %s\n", firmware);
+    fprintf(stderr, "Ref. Clock: %d\n", xtalFreq);
     fprintf(stderr, "Requested Sample Rate: %u\n", samplerate);
     actual_freq((double)samplerate);
     fprintf(stderr, "Output Randomizer %s, Dither: %s\n",
