@@ -1,6 +1,7 @@
 /*
 
-Copyright (c)  2021 Ruslan Migirov <trapi78@gmail.com>
+Copyright (c) 2021 Ruslan Migirov <trapi78@gmail.com>
+Copyright (c) 2024 David Goncalves <dave@w1euj.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -343,7 +344,9 @@ int main(int argc, char **argv) {
     sigact.sa_flags = 0;
     (void)sigaction(SIGINT, &sigact, NULL);
     (void)sigaction(SIGTERM, &sigact, NULL);
-
+    //this is needed for using streamer with a commandline tool like `pv` for limiting file size
+    (void)sigaction(SIGPIPE, &sigact, NULL);
+    
     struct libusb_transfer **transfers = NULL; // List of transfer structures.
     unsigned char **databuffers = NULL;        // List of data buffers.
 
@@ -508,7 +511,7 @@ search:
         usleep(100000);
     }
 
-    fprintf(stderr, "Transfers completed\n");
+    fprintf(stderr, "\nTransfers completed\n");
     command_send(dev_handle, STOPFX3, 0);
 
 
