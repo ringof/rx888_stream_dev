@@ -1,5 +1,9 @@
 # rx888_stream
-Outputs samples to stdout. To build run `make`
+Outputs samples to stdout. 
+
+Install the udev rule by `sudo cp 99-rx888.rules /etc/udev/rules.d`
+
+To build, run `make`
 
 Example command: `./rx888_stream -f SDDC_FX3.img -g 3 --samplerate 135000000 > test.dat`
 
